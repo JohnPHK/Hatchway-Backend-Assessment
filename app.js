@@ -93,5 +93,58 @@ function equalDicts(dict1, dict2) {
     return JSON.stringify(orderedDict1) === JSON.stringify(orderedDict2);
 }
 
+function mergeSortPosts(posts, kind, ascOrDsc) {
+    if (posts.length < 2) return posts;
+    
+    const half = posts.length / 2;
+    
+    const left = posts.splice(0, half); 
+    const right = posts;
+    
+    
+    if (kind === "id") {
+        return mergeById(mergeSortPosts(left, kind, ascOrDsc), mergeSortPosts(right, kind, ascOrDsc));
+    } 
+    //else if (kind === "reads") {
+        
+
+    //} else if (kind === "likes") {
+
+    //} else if (kind === "popularity"){
+
+    //}
+    
+}
+
+
+//Sort the posts by Kind
+function mergeById(left, right, ascOrDsc) {
+    if (!ascOrDsc || ascOrDsc === "asc") {
+        let arr = [];
+        
+        
+        
+
+    } else if (ascOrDsc === "dsc") {
+
+    }
+    
+}
+
+//Sort the posts by read
+function mergeByReads(posts) {
+
+}
+
+//SOrt the posts by Likes
+function mergeByLikes(posts) {
+
+}
+
+//Sort the posts by popularity
+function mergeByPopularity(posts) {
+
+}
+
 const port = process.env.PORT || 3000;
 app.listen(port, () => console.log(`Listening on port ${port}...`));
