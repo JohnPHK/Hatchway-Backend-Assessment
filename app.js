@@ -13,7 +13,14 @@ app.get('/api/ping', (req, res) => {
 app.get('/api/posts', async (req, res) => {
     let posts = [];
     const query = req.query  
-    if (!query.tags) return res.status(400).send("Tags parameter is required");
+    const sortBy = query.sortBy ? query.sortBy : "id";
+    const direction = query.direction ? query.direction : "asc";  
+
+    if (!query.tags) 
+        return res.status(400).send({ error: "Tags parameter is required" });
+
+    if (!validateParams(sortBy, direction)) 
+        return res.status(400).send({ error : "sortBy parameter is invalid" }); 
 
     const tagList = parseTags(query.tags);
     
@@ -32,6 +39,8 @@ app.get('/api/posts', async (req, res) => {
                 posts.push(dictsOfPosts[i])
             }         
         }
+        posts = mergeSortPosts(posts, sortBy, direction); 
+
     } catch (e) {
         res.status(500).json({ error: String(e) });
     }
@@ -93,6 +102,18 @@ function equalDicts(dict1, dict2) {
     return JSON.stringify(orderedDict1) === JSON.stringify(orderedDict2);
 }
 
+//Validate if the parameters (sortBy and direction) are valid
+function validateParams(sortBy, direction) {
+    validSortBy = ["id", "reads", "likes", "popularity"];
+    validDirections = ["asc", "desc"];
+    return validSortBy.includes(sortBy) && validDirections.includes(direction);
+
+}
+
+console.log("1", validateParams("id", "desc"));
+console.log("2", validateParams("reads", "asc"));
+console.log("3", validateParams("ping", "dsc"));
+
 function mergeSortPosts(posts, kind, ascOrDsc) {
     if (posts.length < 2) return posts;
     
@@ -100,51 +121,248 @@ function mergeSortPosts(posts, kind, ascOrDsc) {
     
     const left = posts.splice(0, half); 
     const right = posts;
-    
-    
-    if (kind === "id") {
-        return mergeById(mergeSortPosts(left, kind, ascOrDsc), mergeSortPosts(right, kind, ascOrDsc));
-    } 
-    //else if (kind === "reads") {
-        
 
-    //} else if (kind === "likes") {
-
-    //} else if (kind === "popularity"){
-
-    //}
-    
+    return merge(mergeSortPosts(left, kind, ascOrDsc), 
+                 mergeSortPosts(right, kind, ascOrDsc), 
+                 kind, 
+                 ascOrDsc);
 }
 
 
 //Sort the posts by Kind
-function mergeById(left, right, ascOrDsc) {
+function merge(left, right, kind, ascOrDsc) {
+    let arr = [];
     if (!ascOrDsc || ascOrDsc === "asc") {
-        let arr = [];
-        
-        
-        
 
-    } else if (ascOrDsc === "dsc") {
-
+        while (left.length && right.length) {
+            if (left[0][kind] < right[0][kind]) {
+                arr.push(left.shift());
+            } else {
+                arr.push(right.shift());
+            }
+        }
+    } else if (ascOrDsc === "desc") {
+        while (left.length && right.length) {
+            if (left[0][kind] < right[0][kind]) {
+                arr.push(right.shift());
+            } else {
+                arr.push(left.shift());
+            }
+        }
     }
-    
+    return [...arr, ...left, ...right];
 }
 
-//Sort the posts by read
-function mergeByReads(posts) {
+let test = [
+    {
+        "author": "Rylee Paul",
+        "authorId": 9,
+        "id": 1,
+        "likes": 960,
+        "popularity": 0.13,
+        "reads": 50361,
+        "tags": [
+            "tech",
+            "health"
+        ]
+    },
+    {
+        "author": "Elisha Friedman",
+        "authorId": 8,
+        "id": 4,
+        "likes": 728,
+        "popularity": 0.88,
+        "reads": 19645,
+        "tags": [
+            "science",
+            "design",
+            "tech"
+        ]
+    },
+    {
+        "author": "Zackery Turner",
+        "authorId": 12,
+        "id": 2,
+        "likes": 469,
+        "popularity": 0.68,
+        "reads": 90406,
+        "tags": [
+            "startups",
+            "tech",
+            "history"
+        ]
+    },
+    {
+        "author": "Jaden Bryant",
+        "authorId": 3,
+        "id": 18,
+        "likes": 983,
+        "popularity": 0.09,
+        "reads": 33952,
+        "tags": [
+            "tech",
+            "history"
+        ]
+    },
+    {
+        "author": "Adalyn Blevins",
+        "authorId": 11,
+        "id": 12,
+        "likes": 590,
+        "popularity": 0.32,
+        "reads": 80351,
+        "tags": [
+            "tech"
+        ]
+    },
+    {
+        "author": "Trevon Rodriguez",
+        "authorId": 5,
+        "id": 14,
+        "likes": 311,
+        "popularity": 0.67,
+        "reads": 25644,
+        "tags": [
+            "tech",
+            "history"
+        ]
+    },
+    {
+        "author": "Elisha Friedman",
+        "authorId": 8,
+        "id": 13,
+        "likes": 230,
+        "popularity": 0.31,
+        "reads": 64058,
+        "tags": [
+            "design",
+            "tech"
+        ]
+    },
+    {
+        "author": "Lainey Ritter",
+        "authorId": 1,
+        "id": 15,
+        "likes": 560,
+        "popularity": 0.8,
+        "reads": 81549,
+        "tags": [
+            "culture",
+            "startups",
+            "tech"
+        ]
+    },
+];
 
-}
 
-//SOrt the posts by Likes
-function mergeByLikes(posts) {
+let test1 = [
+    {
+        "author": "Rylee Paul",
+        "authorId": 9,
+        "id": 1,
+        "likes": 960,
+        "popularity": 0.13,
+        "reads": 50361,
+        "tags": [
+            "tech",
+            "health"
+        ]
+    },
+    {
+        "author": "Elisha Friedman",
+        "authorId": 8,
+        "id": 4,
+        "likes": 728,
+        "popularity": 0.88,
+        "reads": 19645,
+        "tags": [
+            "science",
+            "design",
+            "tech"
+        ]
+    },
+    {
+        "author": "Zackery Turner",
+        "authorId": 12,
+        "id": 2,
+        "likes": 469,
+        "popularity": 0.68,
+        "reads": 90406,
+        "tags": [
+            "startups",
+            "tech",
+            "history"
+        ]
+    },
+    {
+        "author": "Jaden Bryant",
+        "authorId": 3,
+        "id": 18,
+        "likes": 983,
+        "popularity": 0.09,
+        "reads": 33952,
+        "tags": [
+            "tech",
+            "history"
+        ]
+    },
+    {
+        "author": "Adalyn Blevins",
+        "authorId": 11,
+        "id": 12,
+        "likes": 590,
+        "popularity": 0.32,
+        "reads": 80351,
+        "tags": [
+            "tech"
+        ]
+    },
+    {
+        "author": "Trevon Rodriguez",
+        "authorId": 5,
+        "id": 14,
+        "likes": 311,
+        "popularity": 0.67,
+        "reads": 25644,
+        "tags": [
+            "tech",
+            "history"
+        ]
+    },
+    {
+        "author": "Elisha Friedman",
+        "authorId": 8,
+        "id": 13,
+        "likes": 230,
+        "popularity": 0.31,
+        "reads": 64058,
+        "tags": [
+            "design",
+            "tech"
+        ]
+    },
+    {
+        "author": "Lainey Ritter",
+        "authorId": 1,
+        "id": 15,
+        "likes": 560,
+        "popularity": 0.8,
+        "reads": 81549,
+        "tags": [
+            "culture",
+            "startups",
+            "tech"
+        ]
+    },
+];
 
-}
+let yo = mergeSortPosts(test, "popularity ", "asc");
+//console.log(yo);
+let yoo = mergeSortPosts(test1, "popularity", "dsc");
+//console.log(yoo);
 
-//Sort the posts by popularity
-function mergeByPopularity(posts) {
-
-}
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => console.log(`Listening on port ${port}...`));
+
+module.exports = { app, validateParams };
