@@ -361,8 +361,5 @@ let yo = mergeSortPosts(test, "popularity ", "asc");
 let yoo = mergeSortPosts(test1, "popularity", "dsc");
 //console.log(yoo);
 
-
-const port = process.env.PORT || 3000;
-app.listen(port, () => console.log(`Listening on port ${port}...`));
-
-module.exports = { app, validateParams };
+app.checkDuplicate = checkDuplicate;
+module.exports = app;
